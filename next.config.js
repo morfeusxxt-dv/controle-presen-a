@@ -4,39 +4,7 @@ const nextConfig = {
   swcMinify: true,
   output: 'standalone',
   
-  // Configuração do SWC para melhor suporte ao Tailwind
-  experimental: {
-    // Habilita o compilador SWC para estilos
-    styledComponents: true,
-    // Força o uso do compilador SWC
-    forceSwcTransforms: true,
-  },
-  
-  // Configuração do Webpack para o Tailwind
-  webpack: (config, { isServer }) => {
-    // Configuração para ignorar erros específicos
-    config.ignoreWarnings = [
-      { module: /node_modules\/tailwindcss/ },
-      { file: /node_modules\/tailwindcss/ },
-    ];
-    
-    // Adiciona o loader do PostCSS
-    config.module.rules.push({
-      test: /\.css$/,
-      use: [
-        'style-loader',
-        'css-loader',
-        'postcss-loader',
-      ],
-    });
-    
-    return config;
-  },
-  
-  // Configurações de build
-  productionBrowserSourceMaps: true,
-  
-  // Desativa a verificação estrita de tipos durante o build
+  // Configurações básicas
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -46,7 +14,12 @@ const nextConfig = {
     domains: ['vercel.com'],
   },
   
-  // Configuração para caminhos absolutos
+  // Configuração experimental para melhorar o build
+  experimental: {
+    forceSwcTransforms: true,
+  },
+  
+  // Configuração do webpack
   webpack: (config, { isServer }) => {
     // Ignorar avisos específicos
     config.ignoreWarnings = [
