@@ -3,22 +3,38 @@
 import { useState, useEffect } from 'react';
 import QRCode from 'qrcode.react';
 
-// Função para carregar dados do localStorage
-const loadFormData = () => {
-  if (typeof window !== 'undefined') {
-    const savedData = localStorage.getItem('formData');
-    return savedData ? JSON.parse(savedData) : { nome: '', email: '', telefone: '' };
-  }
-  return { nome: '', email: '', telefone: '' };
+type FormData = {
+  nome: string;
+  email: string;
+  telefone: string;
 };
 
 export default function Home() {
   // State for form data and submission status
-  const [formData, setFormData] = useState(loadFormData());
+  const [formData, setFormData] = useState<FormData>({
+    nome: '',
+    email: '',
+    telefone: ''
+  });
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState('');
   
-  // Salvar dados no localStorage sempre que o formulário for alterado
+  // Carregar URL atual e dados salvos
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCurrentUrl(window.location.href);
+      
+      // Carregar dados do localStorage
+      const savedData = localStorage.getItem('formData');
+      if (savedData) {
+        setFormData(JSON.parse(savedData));
+      }
+    }
+  }, []);
+  
+  // Salvar dados no localStorage quando o formulário for alterado
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('formData', JSON.stringify(formData));
@@ -27,7 +43,7 @@ export default function Home() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev: { nome: string; email: string; telefone: string }) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value
     }));
@@ -35,36 +51,43 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.nome || !formData.email || !formData.telefone) {
+      alert('Por favor, preencha todos os campos obrigatórios.');
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
-      const dataAtual = new Date();
       const response = await fetch('/api/presencas', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          nome: formData.nome,
-          email: formData.email,
-          telefone: formData.telefone,
-          data: dataAtual.toISOString()
-        }),
+          ...formData,
+          data: new Date().toISOString()
+        })
       });
       
       if (!response.ok) {
         throw new Error('Erro ao registrar presença');
       }
       
-      const novaPresenca = await response.json();
+      await response.json();
       
-      // Just show success message, no need to track presencas in state
-      
-      setIsSuccess(true);
+      // Limpar o formulário e mostrar mensagem de sucesso
       setFormData({ nome: '', email: '', telefone: '' });
+      setIsSuccess(true);
       
-      // Resetar mensagem de sucesso após 5 segundos
-      setTimeout(() => setIsSuccess(false), 5000);
+      // Limpar a mensagem de sucesso após 5 segundos
+      const timer = setTimeout(() => {
+        setIsSuccess(false);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+      
     } catch (error) {
       console.error('Erro ao registrar presença:', error);
       alert('Erro ao registrar presença. Por favor, tente novamente.');
@@ -72,26 +95,6 @@ export default function Home() {
       setIsSubmitting(false);
     }
   };
-
-  // URL da página atual para o QR Code
-  const [currentUrl, setCurrentUrl] = useState('');
-  
-  // Definir a URL apenas no lado do cliente
-  useEffect(() => {
-    setCurrentUrl(window.location.href);
-    
-    // Limpar o formulário após um envio bem-sucedido
-    if (isSuccess) {
-      const timer = setTimeout(() => {
-        setFormData({ nome: '', email: '', telefone: '' });
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('formData');
-        }
-      }, 5000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [isSuccess]);
 
   return (
     <div className="max-w-4xl mx-auto p-4">

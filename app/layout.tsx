@@ -1,30 +1,28 @@
 import './globals.css';
 import { Inter } from 'next/font/google';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from './api/auth/[...nextauth]/route';
-import { Providers } from './providers';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   title: 'Controle de Presença - Cursos',
-  description: 'Sistema de controle de presença para cursos',};
+  description: 'Sistema de controle de presença para cursos',
+  viewport: 'width=device-width, initial-scale=1.0'
+};
 
-export default async function RootLayout({
+const inter = Inter({ subsets: ['latin'] });
+
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
-
   return (
     <html lang="pt-BR">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </head>
       <body className={`${inter.className} bg-gray-50 min-h-screen`}>
-        <Providers session={session}>
-          <main className="container mx-auto p-4">
-            {children}
-          </main>
-        </Providers>
+        <main className="container mx-auto p-4">
+          {children}
+        </main>
       </body>
     </html>
   );
