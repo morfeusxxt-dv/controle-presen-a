@@ -1,0 +1,15 @@
+node_modules
+.next
+*.log
+*.lock
+.git
+.gitignore
+*.md
+.DS_Store
+.env*.local
+.vercel
+.vscode
+.idea
+coverage
+*.sqlite
+*.sqlite-journal
