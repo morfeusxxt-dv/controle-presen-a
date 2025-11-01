@@ -1,56 +1,97 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import QRCode from 'qrcode.react';
 
+// Função para carregar dados do localStorage
+const loadFormData = () => {
+  if (typeof window !== 'undefined') {
+    const savedData = localStorage.getItem('formData');
+    return savedData ? JSON.parse(savedData) : { nome: '', email: '', telefone: '' };
+  }
+  return { nome: '', email: '', telefone: '' };
+};
+
 export default function Home() {
-  const [formData, setFormData] = useState({
-    nome: '',
-    email: '',
-    telefone: ''
-  });
+  // State for form data and submission status
+  const [formData, setFormData] = useState(loadFormData());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [presencas, setPresencas] = useState<Array<{
-    id: number;
-    nome: string;
-    email: string;
-    telefone: string;
-    data: string;
-  }>>([]);
+  
+  // Salvar dados no localStorage sempre que o formulário for alterado
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('formData', JSON.stringify(formData));
+    }
+  }, [formData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev: { nome: string; email: string; telefone: string }) => ({
       ...prev,
       [name]: value
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulando uma requisição assíncrona
-    setTimeout(() => {
-      const novaPresenca = {
-        id: Date.now(),
-        ...formData,
-        data: new Date().toLocaleString('pt-BR')
-      };
+    try {
+      const dataAtual = new Date();
+      const response = await fetch('/api/presencas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nome: formData.nome,
+          email: formData.email,
+          telefone: formData.telefone,
+          data: dataAtual.toISOString()
+        }),
+      });
       
-      setPresencas(prev => [...prev, novaPresenca]);
+      if (!response.ok) {
+        throw new Error('Erro ao registrar presença');
+      }
+      
+      const novaPresenca = await response.json();
+      
+      // Just show success message, no need to track presencas in state
+      
       setIsSuccess(true);
       setFormData({ nome: '', email: '', telefone: '' });
-      setIsSubmitting(false);
       
       // Resetar mensagem de sucesso após 5 segundos
       setTimeout(() => setIsSuccess(false), 5000);
-    }, 1000);
+    } catch (error) {
+      console.error('Erro ao registrar presença:', error);
+      alert('Erro ao registrar presença. Por favor, tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // URL da página atual para o QR Code
-  const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const [currentUrl, setCurrentUrl] = useState('');
+  
+  // Definir a URL apenas no lado do cliente
+  useEffect(() => {
+    setCurrentUrl(window.location.href);
+    
+    // Limpar o formulário após um envio bem-sucedido
+    if (isSuccess) {
+      const timer = setTimeout(() => {
+        setFormData({ nome: '', email: '', telefone: '' });
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('formData');
+        }
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess]);
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -133,7 +174,7 @@ export default function Home() {
           </form>
         </div>
 
-        {/* QR Code e Lista de Presenças */}
+        {/* QR Code Section */}
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-semibold mb-3 text-gray-800">Acesso Rápido</h2>
@@ -147,34 +188,6 @@ export default function Home() {
               />
             </div>
             <p className="mt-3 text-xs text-gray-500 text-center">Ou compartilhe o link: <span className="font-mono text-blue-500">{currentUrl}</span></p>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-3 text-gray-800">Presenças Registradas</h2>
-            {presencas.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Nenhuma presença registrada ainda.</p>
-            ) : (
-              <div className="max-h-60 overflow-y-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {presencas.map((presenca) => (
-                      <tr key={presenca.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{presenca.nome}</td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(presenca.data).toLocaleTimeString('pt-BR')}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </div>
         </div>
       </div>
