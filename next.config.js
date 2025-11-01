@@ -2,8 +2,12 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  // Habilita a exportação estática para o Vercel
   output: 'standalone',
+  
+  // Desativa a verificação estrita de tipos durante o build
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   
   // Configurações de imagens otimizadas
   images: {
@@ -12,33 +16,41 @@ const nextConfig = {
   
   // Configuração para caminhos absolutos
   webpack: (config, { isServer }) => {
+    // Ignorar avisos específicos
+    config.ignoreWarnings = [
+      { module: /node_modules\/prisma\/build/ },
+      { file: /node_modules\/prisma\/build/ },
+      { file: /node_modules\/@prisma\/client/ },
+    ];
+
     // Adiciona suporte para SQLite no navegador
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
-        path: false,
-        os: false,
+        net: false,
+        tls: false,
+        dns: false,
+        child_process: false,
       };
     }
 
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@': __dirname,
+    // Adiciona suporte para o Prisma
+    config.module = {
+      ...config.module,
+      exprContextCritical: false,
     };
-    
+
     return config;
   },
   
   // Configuração para TypeScript
   typescript: {
-    // Ignorar erros de tipagem durante a construção
     ignoreBuildErrors: true,
   },
   
   // Configuração para ESLint
   eslint: {
-    // Ignorar erros de ESLint durante a construção
     ignoreDuringBuilds: true,
   },
   
@@ -48,9 +60,12 @@ const nextConfig = {
   },
 };
 
-// Para ambiente de desenvolvimento, usamos o SQLite
+// Configuração do banco de dados
 if (process.env.NODE_ENV !== 'production') {
-  process.env.DATABASE_URL = 'file:./dev.db';
+  process.env.DATABASE_URL = 'file:./prisma/dev.db';
+} else {
+  // Configuração para produção (Vercel)
+  process.env.DATABASE_URL = process.env.DATABASE_URL || 'file:./prisma/prod.db';
 }
 
 module.exports = nextConfig;
