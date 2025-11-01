@@ -8,9 +8,14 @@
   ],
   "build": {
     "env": {
-      "NODE_ENV": "production"
+      "NODE_ENV": "production",
+      "DATABASE_URL": "file:./prisma/prod.db"
     }
   },
+  "buildCommand": "prisma generate && prisma migrate deploy && next build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
   "routes": [
     {
       "src": "/(.*)",
