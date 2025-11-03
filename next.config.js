@@ -16,9 +16,10 @@ const nextConfig = {
     domains: ['localhost'],
   },
   
-  experimental: {
-    optimizeCss: true,
-  },
+  // Removed experimental.optimizeCss to avoid potential PostCSS conflicts
+  // experimental: {
+  //   optimizeCss: true,
+  // },
   
   webpack: (config) => {
     config.resolve.fallback = {
