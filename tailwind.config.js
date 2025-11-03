@@ -13,5 +13,9 @@ module.exports = {
       },
     },
   },
-  plugins: [], // Removendo plugins do Tailwind CSS v3 que não são compatíveis com v4
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+    require('@tailwindcss/aspect-ratio'),
+  ],
 }
