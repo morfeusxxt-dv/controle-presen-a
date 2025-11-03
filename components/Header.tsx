@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { useState } from 'react';
-import { Menu, X, LogOut, LayoutDashboard, Home as HomeIcon, LogIn } from 'lucide-react'; // Importando ícones Lucide
+import { Menu, X, LogOut, LayoutDashboard, Home as HomeIcon, LogIn } from 'lucide-react';
 
 export default function Header() {
   const { data: session } = useSession();

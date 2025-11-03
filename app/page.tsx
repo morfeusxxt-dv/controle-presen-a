@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import QRCode from 'qrcode.react';
-import { CheckCircle, Loader2 } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, ClipboardCopy } from 'lucide-react'; // Adicionando XCircle e ClipboardCopy
+import { showSuccessToast, showErrorToast, showLoadingToast, dismissToast } from '@/utils/toast'; // Importando utilitários de toast
 
 type FormData = {
   nome: string;
@@ -18,7 +19,6 @@ export default function Home() {
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [currentUrl, setCurrentUrl] = useState('');
   
   useEffect(() => {
@@ -51,11 +51,12 @@ export default function Home() {
     e.preventDefault();
     
     if (!formData.nome || !formData.email || !formData.telefone) {
-      alert('Por favor, preencha todos os campos obrigatórios.');
+      showErrorToast('Por favor, preencha todos os campos obrigatórios.');
       return;
     }
     
     setIsSubmitting(true);
+    const toastId = showLoadingToast('Registrando presença...');
     
     try {
       const response = await fetch('/api/presencas', {
@@ -70,28 +71,28 @@ export default function Home() {
       });
       
       if (!response.ok) {
-        throw new Error('Erro ao registrar presença');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erro ao registrar presença');
       }
       
       await response.json();
       
       // Limpar o formulário e mostrar mensagem de sucesso
       setFormData({ nome: '', email: '', telefone: '' });
-      setIsSuccess(true);
+      showSuccessToast('Presença registrada com sucesso!');
       
-      // Limpar a mensagem de sucesso após 5 segundos
-      const timer = setTimeout(() => {
-        setIsSuccess(false);
-      }, 5000);
-      
-      return () => clearTimeout(timer);
-      
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao registrar presença:', error);
-      alert('Erro ao registrar presença. Por favor, tente novamente.');
+      showErrorToast(error.message || 'Erro ao registrar presença. Por favor, tente novamente.');
     } finally {
+      dismissToast(toastId);
       setIsSubmitting(false);
     }
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(currentUrl);
+    showSuccessToast('Link copiado para a área de transferência!');
   };
 
   return (
@@ -108,9 +109,9 @@ export default function Home() {
 
       <div className="grid md:grid-cols-2 gap-8 items-start">
         {/* Formulário de Registro */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-          <div className="p-1 bg-gradient-to-r from-blue-500 to-cyan-500">
-            <div className="bg-white p-6 rounded-t-lg">
+        <div className="card"> {/* Usando a classe 'card' */}
+          <div className="card-header-gradient"> {/* Usando a classe 'card-header-gradient' */}
+            <div className="card-header-content"> {/* Usando a classe 'card-header-content' */}
               <h2 className="text-2xl font-bold text-gray-800 flex items-center">
                 <span className="bg-blue-100 text-blue-600 p-2 rounded-full mr-3">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -123,98 +124,88 @@ export default function Home() {
           </div>
           
           <div className="p-6">
-            {isSuccess ? (
-              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start">
-                <CheckCircle className="h-6 w-6 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h3 className="font-medium text-green-800">Presença registrada com sucesso!</h3>
-                  <p className="text-sm text-green-600 mt-1">Obrigado por confirmar sua presença.</p>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-1">
+                <label htmlFor="nome" className="block text-sm font-medium text-gray-700">
+                  Nome Completo <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="nome"
+                    name="nome"
+                    value={formData.nome}
+                    onChange={handleChange}
+                    required
+                    className="input-field" // Usando a classe 'input-field'
+                    placeholder="Digite seu nome completo"
+                  />
                 </div>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-1">
-                  <label htmlFor="nome" className="block text-sm font-medium text-gray-700">
-                    Nome Completo <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      id="nome"
-                      name="nome"
-                      value={formData.nome}
-                      onChange={handleChange}
-                      required
-                      className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      placeholder="Digite seu nome completo"
-                    />
-                  </div>
-                </div>
 
-                <div className="space-y-1">
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                    E-mail <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      placeholder="seu@email.com"
-                    />
-                  </div>
+              <div className="space-y-1">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  E-mail <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="input-field" // Usando a classe 'input-field'
+                    placeholder="seu@email.com"
+                  />
                 </div>
+              </div>
 
-                <div className="space-y-1">
-                  <label htmlFor="telefone" className="block text-sm font-medium text-gray-700">
-                    Telefone/WhatsApp <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="tel"
-                      id="telefone"
-                      name="telefone"
-                      value={formData.telefone}
-                      onChange={handleChange}
-                      required
-                      className="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                      placeholder="(00) 00000-0000"
-                    />
-                  </div>
+              <div className="space-y-1">
+                <label htmlFor="telefone" className="block text-sm font-medium text-gray-700">
+                  Telefone/WhatsApp <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="tel"
+                    id="telefone"
+                    name="telefone"
+                    value={formData.telefone}
+                    onChange={handleChange}
+                    required
+                    className="input-field" // Usando a classe 'input-field'
+                    placeholder="(00) 00000-0000"
+                  />
                 </div>
+              </div>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`w-full py-3 px-6 rounded-lg font-medium text-white transition-all duration-200 flex items-center justify-center ${
-                    isSubmitting 
-                      ? 'bg-blue-400 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
-                  }`}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="animate-spin mr-2 h-5 w-5 text-white" />
-                      Processando...
-                    </>
-                  ) : (
-                    'Confirmar Presença'
-                  )}
-                </button>
-              </form>
-            )}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`btn btn-primary w-full ${
+                  isSubmitting 
+                    ? 'opacity-70 cursor-not-allowed' 
+                    : 'shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
+                }`}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="animate-spin mr-2 h-5 w-5 text-white" />
+                    Processando...
+                  </>
+                ) : (
+                  'Confirmar Presença'
+                )}
+              </button>
+            </form>
           </div>
         </div>
 
         {/* Seção QR Code */}
         <div className="space-y-6 sticky top-6">
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-            <div className="p-1 bg-gradient-to-r from-blue-500 to-cyan-500">
-              <div className="bg-white p-6 rounded-t-lg">
+          <div className="card"> {/* Usando a classe 'card' */}
+            <div className="card-header-gradient"> {/* Usando a classe 'card-header-gradient' */}
+              <div className="card-header-content"> {/* Usando a classe 'card-header-content' */}
                 <h2 className="text-xl font-bold text-gray-800 flex items-center">
                   <span className="bg-blue-100 text-blue-600 p-2 rounded-full mr-3">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -257,22 +248,17 @@ export default function Home() {
                   />
                   <button
                     type="button"
-                    onClick={() => {
-                      navigator.clipboard.writeText(currentUrl);
-                      alert('Link copiado para a área de transferência!');
-                    }}
-                    className="px-4 py-2 bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                    onClick={handleCopyLink}
+                    className="px-4 py-2 bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors flex items-center"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                    </svg>
+                    <ClipboardCopy size={18} className="mr-1" /> Copiar
                   </button>
                 </div>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 p-6">
+          <div className="card p-6"> {/* Usando a classe 'card' */}
             <h3 className="font-medium text-gray-800 mb-3 flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

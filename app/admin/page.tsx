@@ -4,28 +4,46 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { CalendarDays, Users, CheckCircle } from 'lucide-react'; // Importando ícones Lucide
+
+type Presenca = {
+  id: string;
+  nome: string;
+  email: string;
+  telefone: string;
+  data: string;
+  createdAt: string;
+};
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [stats, setStats] = useState({ total: 0, today: 0 });
+  const [latestPresencas, setLatestPresencas] = useState<Presenca[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/signin');
     } else if (status === 'authenticated') {
-      fetchStats();
+      fetchDashboardData();
     }
   }, [status, router]);
 
-  const fetchStats = async () => {
+  const fetchDashboardData = async () => {
     try {
-      const res = await fetch('/api/presencas/stats');
-      const data = await res.json();
-      setStats(data);
+      const [statsRes, presencasRes] = await Promise.all([
+        fetch('/api/presencas/stats'),
+        fetch('/api/presencas?limit=5'), // Buscar as 5 últimas presenças
+      ]);
+
+      const statsData = await statsRes.json();
+      const presencasData = await presencasRes.json();
+
+      setStats(statsData);
+      setLatestPresencas(presencasData);
     } catch (error) {
-      console.error('Erro ao carregar estatísticas:', error);
+      console.error('Erro ao carregar dados do dashboard:', error);
     } finally {
       setIsLoading(false);
     }
@@ -48,10 +66,9 @@ export default function AdminDashboard() {
             <span className="text-gray-700">{session?.user?.email}</span>
             <button
               onClick={() => {
-                // Implementar logout
                 router.push('/api/auth/signout');
               }}
-              className="text-sm text-red-600 hover:text-red-800"
+              className="btn btn-danger" // Usando a classe 'btn-danger'
             >
               Sair
             </button>
@@ -62,13 +79,11 @@ export default function AdminDashboard() {
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="card"> {/* Usando a classe 'card' */}
               <div className="px-4 py-5 sm:p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0 bg-blue-500 rounded-md p-3">
-                    <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
+                    <Users className="h-6 w-6 text-white" /> {/* Ícone Lucide */}
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
@@ -91,13 +106,11 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="bg-white overflow-hidden shadow rounded-lg">
+            <div className="card"> {/* Usando a classe 'card' */}
               <div className="px-4 py-5 sm:p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0 bg-green-500 rounded-md p-3">
-                    <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
+                    <CalendarDays className="h-6 w-6 text-white" /> {/* Ícone Lucide */}
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
@@ -122,20 +135,52 @@ export default function AdminDashboard() {
           </div>
 
           <div className="mt-8">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-medium text-gray-900">Últimas Presenças</h2>
               <Link 
                 href="/admin/presencas/nova" 
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="btn btn-primary" // Usando a classe 'btn-primary'
               >
                 Adicionar Presença
               </Link>
             </div>
-            <div className="mt-4 bg-white shadow overflow-hidden sm:rounded-md">
+            <div className="card"> {/* Usando a classe 'card' */}
               <ul className="divide-y divide-gray-200">
-                <li className="px-6 py-4">
-                  <p className="text-sm text-gray-500 text-center">Nenhuma presença registrada ainda.</p>
-                </li>
+                {latestPresencas.length > 0 ? (
+                  latestPresencas.map((presenca) => (
+                    <li key={presenca.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{presenca.nome}</p>
+                        <p className="text-sm text-gray-500">{presenca.email}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-500">
+                          {new Date(presenca.createdAt).toLocaleString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </p>
+                      </div>
+                    </li>
+                  ))
+                ) : (
+                  <li className="px-6 py-8 text-center">
+                    <CheckCircle className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhuma presença registrada ainda</h3>
+                    <p className="mt-1 text-sm text-gray-500">Comece adicionando uma nova presença ou aguarde os registros.</p>
+                    <div className="mt-6">
+                      <Link 
+                        href="/admin/presencas/nova" 
+                        className="btn btn-primary" // Usando a classe 'btn-primary'
+                      >
+                        Adicionar Presença
+                      </Link>
+                    </div>
+                  </li>
+                )}
               </ul>
             </div>
           </div>

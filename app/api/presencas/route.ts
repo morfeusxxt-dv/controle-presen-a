@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth.config'; // Corrected import path
+import { authOptions } from '@/lib/auth.config';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -14,10 +14,14 @@ export async function GET() {
       );
     }
 
+    const { searchParams } = new URL(request.url);
+    const limit = searchParams.get('limit');
+    
     const presencas = await prisma.presenca.findMany({
       orderBy: {
         createdAt: 'desc',
       },
+      take: limit ? parseInt(limit, 10) : undefined, // Aplicar limite se fornecido
       include: {
         user: {
           select: {
@@ -40,15 +44,6 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    // Removendo a verificação de sessão para permitir registro sem autenticação
-    // const session = await getServerSession(authOptions);
-    // if (!session) {
-    //   return NextResponse.json(
-    //     { error: 'Não autorizado' },
-    //     { status: 401 }
-    //   );
-    // }
-
     const { nome, email, telefone, data } = await request.json();
 
     if (!nome || !email || !telefone) {
@@ -64,9 +59,6 @@ export async function POST(request: Request) {
         email,
         telefone,
         data: data ? new Date(data) : new Date(),
-        // userId is now optional based on schema.prisma
-        // If you want to link to a user, ensure the user exists and provide a valid ID.
-        // For now, it's omitted as it's optional and not provided by the form.
       },
     });
 
