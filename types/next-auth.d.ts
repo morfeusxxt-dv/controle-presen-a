@@ -1,1 +1,0 @@
-// Type declarations are now handled in lib/auth.config.ts
