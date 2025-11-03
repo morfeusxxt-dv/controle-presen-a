@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import QRCode from 'qrcode.react';
-import { Loader2, CheckCircle, XCircle, ClipboardCopy } from 'lucide-react'; // Adicionando XCircle e ClipboardCopy
-import { showSuccessToast, showErrorToast, showLoadingToast, dismissToast } from '@/utils/toast'; // Importando utilitários de toast
+import dynamic from 'next/dynamic'; // Importar dynamic
+import { Loader2, CheckCircle, XCircle, ClipboardCopy } from 'lucide-react';
+import { showSuccessToast, showErrorToast, showLoadingToast, dismissToast } from '@/utils/toast';
+
+// Importar ClientQRCode dinamicamente com SSR desabilitado
+const DynamicQRCode = dynamic(() => import('@/components/ClientQRCode'), { ssr: false });
 
 type FormData = {
   nome: string;
@@ -109,9 +112,9 @@ export default function Home() {
 
       <div className="grid md:grid-cols-2 gap-8 items-start">
         {/* Formulário de Registro */}
-        <div className="card"> {/* Usando a classe 'card' */}
-          <div className="card-header-gradient"> {/* Usando a classe 'card-header-gradient' */}
-            <div className="card-header-content"> {/* Usando a classe 'card-header-content' */}
+        <div className="card">
+          <div className="card-header-gradient">
+            <div className="card-header-content">
               <h2 className="text-2xl font-bold text-gray-800 flex items-center">
                 <span className="bg-blue-100 text-blue-600 p-2 rounded-full mr-3">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -137,7 +140,7 @@ export default function Home() {
                     value={formData.nome}
                     onChange={handleChange}
                     required
-                    className="input-field" // Usando a classe 'input-field'
+                    className="input-field"
                     placeholder="Digite seu nome completo"
                   />
                 </div>
@@ -155,7 +158,7 @@ export default function Home() {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="input-field" // Usando a classe 'input-field'
+                    className="input-field"
                     placeholder="seu@email.com"
                   />
                 </div>
@@ -173,7 +176,7 @@ export default function Home() {
                     value={formData.telefone}
                     onChange={handleChange}
                     required
-                    className="input-field" // Usando a classe 'input-field'
+                    className="input-field"
                     placeholder="(00) 00000-0000"
                   />
                 </div>
@@ -203,9 +206,9 @@ export default function Home() {
 
         {/* Seção QR Code */}
         <div className="space-y-6 sticky top-6">
-          <div className="card"> {/* Usando a classe 'card' */}
-            <div className="card-header-gradient"> {/* Usando a classe 'card-header-gradient' */}
-              <div className="card-header-content"> {/* Usando a classe 'card-header-content' */}
+          <div className="card">
+            <div className="card-header-gradient">
+              <div className="card-header-content">
                 <h2 className="text-xl font-bold text-gray-800 flex items-center">
                   <span className="bg-blue-100 text-blue-600 p-2 rounded-full mr-3">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -221,20 +224,22 @@ export default function Home() {
               <p className="text-gray-600 mb-4">Escaneie o QR Code abaixo para acessar esta página diretamente do seu celular:</p>
               
               <div className="flex justify-center p-4 bg-white border-2 border-dashed border-gray-200 rounded-xl mb-4">
-                <QRCode 
-                  value={currentUrl} 
-                  size={180}
-                  level="H"
-                  includeMargin={false}
-                  fgColor="#1e40af"
-                  bgColor="#ffffff"
-                  imageSettings={{
-                    src: '/favicon.ico',
-                    height: 30,
-                    width: 30,
-                    excavate: true,
-                  }}
-                />
+                {currentUrl && (
+                  <DynamicQRCode 
+                    value={currentUrl} 
+                    size={180}
+                    level="H"
+                    includeMargin={false}
+                    fgColor="#1e40af"
+                    bgColor="#ffffff"
+                    imageSettings={{
+                      src: '/favicon.ico',
+                      height: 30,
+                      width: 30,
+                      excavate: true,
+                    }}
+                  />
+                )}
               </div>
               
               <div className="mt-6">
@@ -258,7 +263,7 @@ export default function Home() {
             </div>
           </div>
           
-          <div className="card p-6"> {/* Usando a classe 'card' */}
+          <div className="card p-6">
             <h3 className="font-medium text-gray-800 mb-3 flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
