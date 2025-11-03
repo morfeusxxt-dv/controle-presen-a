@@ -2,28 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom Base Styles */
+/* Custom Base Styles - Minimal overrides, relying mostly on Tailwind */
 @layer base {
   :root {
-    /* Colors */
-    --primary: #2563eb;
-    --primary-hover: #1d4ed8;
-    --secondary: #06b6d4;
-    --success: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --info: #3b82f6;
+    /* Define cores primárias para fácil referência no Tailwind */
+    --color-primary: 37 99 235; /* blue-600 */
+    --color-primary-hover: 29 78 216; /* blue-700 */
+    --color-secondary: 6 182 212; /* cyan-500 */
+    --color-success: 16 185 129; /* green-500 */
+    --color-danger: 239 68 68; /* red-500 */
+    --color-warning: 245 158 11; /* amber-500 */
+    --color-info: 59 130 246; /* blue-500 */
   }
 
   body {
     min-height: 100vh;
-    background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
-    color: #1f2937;
+    background-color: #f8fafc; /* light gray background */
+    color: #1f2937; /* dark gray text */
     font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
   }
   
+  /* Dark mode styles (if implemented) */
   .dark body {
-    background: #111827;
+    background-color: #111827;
     color: #f9fafb;
   }
   
@@ -41,19 +42,13 @@
     color: #f9fafb;
   }
   
-  h1 { font-size: 2.25rem; line-height: 2.5rem; }
-  h2 { font-size: 1.875rem; line-height: 2.25rem; }
-  h3 { font-size: 1.5rem; line-height: 2rem; }
-  h4 { font-size: 1.25rem; line-height: 1.75rem; }
-  h5 { font-size: 1.125rem; line-height: 1.75rem; }
-  
   a {
-    color: #2563eb;
+    color: rgb(var(--color-primary));
     text-decoration: none;
   }
   
   a:hover {
-    color: #1e40af;
+    color: rgb(var(--color-primary-hover));
   }
   
   .dark a {
@@ -65,116 +60,37 @@
   }
 }
 
-/* Custom Components */
+/* Custom Components - Using @apply for consistency with Tailwind */
 @layer components {
-  /* Buttons */
   .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    line-height: 1.25rem;
-    border-radius: 0.375rem;
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 200ms;
-  }
-
-  .btn:focus {
-    outline: 2px solid transparent;
-    outline-offset: 2px;
-    --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-    --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
-    box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-    --tw-ring-opacity: 1;
-    --tw-ring-color: rgb(59 130 246 / var(--tw-ring-opacity));
-    --tw-ring-offset-width: 2px;
-  }
-
-  .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
   }
 
   .btn-primary {
-    background-color: #2563eb;
-    color: white;
-  }
-
-  .btn-primary:hover {
-    background-color: #1d4ed8;
+    @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
   }
 
   .btn-secondary {
-    background-color: #f3f4f6;
-    color: #374151;
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600;
   }
 
-  .btn-secondary:hover {
-    background-color: #e5e7eb;
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
   }
 
-  .dark .btn-secondary {
-    background-color: #374151;
-    color: #f9fafb;
+  .input-field {
+    @apply block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm;
   }
 
-  .dark .btn-secondary:hover {
-    background-color: #4b5563;
+  .card {
+    @apply bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100;
   }
 
-  /* Tables */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1rem 0;
-  }
-  
-  th, td {
-    padding: 0.5rem 1rem;
-    border: 1px solid #e5e7eb;
-  }
-  
-  th {
-    background-color: #f9fafb;
-    text-align: left;
-    font-weight: 600;
+  .card-header-gradient {
+    @apply p-1 bg-gradient-to-r from-blue-500 to-cyan-500;
   }
 
-  .dark th {
-    background-color: #1f2937;
-    border-color: #374151;
-  }
-
-  .dark td {
-    border-color: #374151;
-  }
-
-  /* Code blocks */
-  pre {
-    padding: 1rem;
-    border-radius: 0.375rem;
-    margin: 1rem 0;
-    overflow-x: auto;
-    font-size: 0.875rem;
-    line-height: 1.5;
-    background-color: #f9fafb;
-  }
-
-  .dark pre {
-    background-color: #1f2937;
-    color: #f9fafb;
-  }
-
-  /* Scrollbar */
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  .card-header-content {
+    @apply bg-white p-6 rounded-t-lg;
   }
 }
