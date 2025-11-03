@@ -1,6 +1,7 @@
 module.exports = {
   plugins: [
-    require('@tailwindcss/postcss'), // Carrega o plugin PostCSS do pacote @tailwindcss/postcss
+    require('postcss-import'), // Importante para resolver as diretivas @tailwind
+    require('@tailwindcss/postcss'), // O plugin PostCSS para Tailwind CSS v4
     require('autoprefixer'),
   ],
 };
