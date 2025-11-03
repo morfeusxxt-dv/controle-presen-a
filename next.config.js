@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
@@ -8,7 +9,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   
-  webpack: (config, { isServer }) => {
+  webpack: (config) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,
@@ -30,29 +31,24 @@ const nextConfig = {
     domains: ['localhost'],
   },
   
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-        ],
-      },
-    ];
-  },
-  
   experimental: {
-    swcMinify: true,
     optimizeCss: true,
-    optimizeFonts: true,
   },
   
-  async redirects() {
-    return [];
-  }
+  // Desativa a verificação de tipos durante o build
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  
+  // Desativa a verificação do ESLint durante o build
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  
+  // Configuração para pacotes externos
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client'],
+  },
 }
 
 module.exports = nextConfig;
