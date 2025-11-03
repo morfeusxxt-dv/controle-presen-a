@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth.config'; // Corrected import path
 import { prisma } from '@/lib/prisma';
 
 export async function GET() {
@@ -64,9 +64,9 @@ export async function POST(request: Request) {
         email,
         telefone,
         data: data ? new Date(data) : new Date(),
-        // Usando um ID de usuário padrão ou nulo, dependendo do seu esquema
-        // Se o campo for obrigatório, você precisará criar um usuário padrão
-        userId: '00000000-0000-0000-0000-000000000000',
+        // userId is now optional based on schema.prisma
+        // If you want to link to a user, ensure the user exists and provide a valid ID.
+        // For now, it's omitted as it's optional and not provided by the form.
       },
     });
 
