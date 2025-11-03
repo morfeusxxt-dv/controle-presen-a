@@ -7,7 +7,7 @@ import { SessionProvider } from 'next-auth/react';
 const inter = Inter({ subsets: ['latin'] });
 
 // Adiciona metadados para SEO
-const metadata = {
+export const metadata = {
   title: 'Controle de Presença - Cursos e Eventos',
   description: 'Sistema de controle de presença para cursos e eventos. Registre sua presença de forma rápida e fácil.',
   keywords: 'presença, cursos, eventos, registro, check-in',
@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang="pt-BR" className="h-full bg-gray-50">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content={metadata.viewport} />
