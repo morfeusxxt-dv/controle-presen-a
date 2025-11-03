@@ -10,6 +10,7 @@
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
+    "prisma:dev:migrate": "npx prisma migrate dev --name init",
     "prisma:init": "node prisma/init.js",
     "vercel-build": "npm install && prisma generate && prisma migrate deploy && next build"
   },
