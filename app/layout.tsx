@@ -4,7 +4,10 @@ import { Providers } from './providers';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import ToastProvider from '@/components/ToastProvider'; // Importando o ToastProvider
+import dynamic from 'next/dynamic'; // Importando dynamic
+
+// Importar ToastProvider dinamicamente com SSR desabilitado
+const DynamicToastProvider = dynamic(() => import('@/components/ToastProvider'), { ssr: false });
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -29,7 +32,7 @@ export default function RootLayout({
     <html lang="pt-BR" className={inter.variable}>
       <body className={`${inter.className} min-h-screen bg-gray-50 flex flex-col`}>
         <Providers>
-          <ToastProvider /> {/* Adicionando o ToastProvider aqui */}
+          <DynamicToastProvider /> {/* Usando o ToastProvider dinâmico aqui */}
           <Header />
           <main className="flex-grow">
             {children}
