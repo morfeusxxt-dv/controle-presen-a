@@ -9,8 +9,7 @@
   "build": {
     "env": {
       "NODE_ENV": "production",
-      "NEXT_PUBLIC_BASE_URL": "https://your-vercel-app-url.vercel.app",
-      "DATABASE_URL": "file:./prisma/prod.db"
+      "NEXT_PUBLIC_BASE_URL": "https://your-vercel-app-url.vercel.app"
     }
   },
   "buildCommand": "npm install && npm run build",
