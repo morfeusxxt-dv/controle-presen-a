@@ -32,12 +32,12 @@ export default function RootLayout({
     <html lang="pt-BR" className={inter.variable}>
       <body className={`${inter.className} min-h-screen bg-gray-50 flex flex-col`}>
         <Providers>
-          <DynamicToastProvider /> {/* Usando o ToastProvider dinâmico aqui */}
           <Header />
           <main className="flex-grow">
             {children}
           </main>
           <Footer />
+          <DynamicToastProvider /> {/* Movido para o final do Providers */}
         </Providers>
       </body>
     </html>
