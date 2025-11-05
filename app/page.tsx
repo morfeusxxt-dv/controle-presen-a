@@ -23,8 +23,10 @@ export default function Home() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentUrl, setCurrentUrl] = useState('');
+  const [mounted, setMounted] = useState(false); // Novo estado para controlar a montagem no cliente
   
   useEffect(() => {
+    setMounted(true); // Define como montado após a primeira renderização no cliente
     if (typeof window !== 'undefined') {
       setCurrentUrl(window.location.origin);
       
@@ -224,7 +226,7 @@ export default function Home() {
               <p className="text-gray-600 mb-4">Escaneie o QR Code abaixo para acessar esta página diretamente do seu celular:</p>
               
               <div className="flex justify-center p-4 bg-white border-2 border-dashed border-gray-200 rounded-xl mb-4">
-                {currentUrl && (
+                {mounted && currentUrl && ( // Renderiza o QR code apenas se o componente estiver montado e a URL disponível
                   <DynamicQRCode 
                     value={currentUrl} 
                     size={180}
